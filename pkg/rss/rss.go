@@ -49,17 +49,13 @@ func ParseFeed(url string) ([]storage.News, error) {
 		return []storage.News{}, err
 	}
 
-	// Регулярное выражение для удаления html тэгов
-	const regex = `<.*?>`
-	r := regexp.MustCompile(regex)
-
 	var news []storage.News
 	// Итерируем по массиву новостей
 	for _, item := range feed.Channel.Items {
 		var n storage.News
 		n.Title = item.Title
 		// Удаляем html тэги с помощью регулярного выражения
-		n.Content = r.ReplaceAllString(item.Content, "")
+		n.Content = stripHtmlTags(item.Content)
 		n.Link = item.Link
 		// Парсим время публикации по одному формату
 		t, err := time.Parse("Mon, 2 Jan 2006 15:04:05 -0700", item.PubTime)
@@ -74,4 +70,12 @@ func ParseFeed(url string) ([]storage.News, error) {
 		news = append(news, n)
 	}
 	return news, nil
+}
+
+func stripHtmlTags(s string) string {
+	// Регулярное выражение для удаления html тэгов
+	const regex = `<.*?>`
+	r := regexp.MustCompile(regex)
+	// Удаляем html тэги с помощью регулярного выражения
+	return r.ReplaceAllString(s, "")
 }
